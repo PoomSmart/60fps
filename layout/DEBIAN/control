@@ -1,0 +1,8 @@
+Package: org.thebigboss.sixtyfps7
+Name: 60fps7
+Depends: mobilesubstrate, firmware (>= 7.0), firmware (<< 8.0), gsc.still-camera
+Version: 1.0
+Architecture: iphoneos-arm
+Description: 60 fps capture support for camera!
+Author: PoomSmart
+Section: Tweaks

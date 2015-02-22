@@ -1,0 +1,5 @@
+#!/bin/bash
+
+echo "Killing mediaserverd..."
+echo "Created by PoomSmart"
+killall mediaserverd
