@@ -14,7 +14,8 @@ int hax_CopySupportedFormatsArray(CFAllocatorRef ref, CFMutableArrayRef *arg2, H
 	NSMutableArray *array = (NSMutableArray *)refo;
 	for (NSUInteger i = 0; i < array.count;  i++) {
 		NSMutableDictionary *format = [array[i] mutableCopy];
-		format[@"Experimental"] = @0;
+		if ([format[@"VideoMaxFrameRate"] intValue] == 60)
+			format[@"Experimental"] = @0;
 		array[i] = format;
 	}
 	*arg2 = (CFMutableArrayRef)array;
