@@ -5,27 +5,49 @@ typedef struct H4ISPCaptureStream *H4ISPCaptureStreamRef;
 typedef struct H4ISPCaptureDevice *H4ISPCaptureDeviceRef;
 typedef struct OpaqueCMBaseObject *OpaqueCMBaseObjectRef;
 
-int (*my_CopySupportedFormatsArray)(CFAllocatorRef, CFMutableArrayRef *, H4ISPCaptureStream *, H4ISPCaptureDevice *);
-int (*orig_CopySupportedFormatsArray)(CFAllocatorRef, CFMutableArrayRef *, H4ISPCaptureStream *, H4ISPCaptureDevice *);
-int hax_CopySupportedFormatsArray(CFAllocatorRef ref, CFMutableArrayRef *arg2, H4ISPCaptureStream *arg3, H4ISPCaptureDevice *arg4)
+/*typedef struct sCIspCameraConfig *sCIspCameraConfigRef;
+typedef struct sCIspCmdChInfoGet *sCIspCmdChInfoGetRef;
+
+int (*my_GetCameraConfig)(unsigned int, unsigned int, sCIspCameraConfig *, sCIspCmdChInfoGet *);
+int (*orig_GetCameraConfig)(unsigned int, unsigned int, sCIspCameraConfig *, sCIspCmdChInfoGet *);
+int hax_GetCameraConfig(unsigned int arg1, unsigned int arg2, sCIspCameraConfig *arg3, sCIspCmdChInfoGet *arg4)
+{
+
+}*/
+
+/*int (*my_H4ISPCaptureDeviceCopyProperty)(OpaqueCMBaseObjectRef, CFStringRef const, CFAllocatorRef, CFMutableArrayRef *);
+int (*orig_H4ISPCaptureDeviceCopyProperty)(OpaqueCMBaseObjectRef, CFStringRef const, CFAllocatorRef, CFMutableArrayRef *);
+int hax_H4ISPCaptureDeviceCopyProperty(OpaqueCMBaseObjectRef ref, CFStringRef const key, CFAllocatorRef allocator, CFMutableArrayRef *property)
+{
+	CFMutableArrayRef myProperty;
+	int orig = orig_H4ISPCaptureDeviceCopyProperty(ref, key, allocator, &myProperty);
+	NSLog(@"%@ : %@", key, myProperty);
+	CFRelease(myProperty);
+	return orig;
+}*/
+
+int (*my_CopySupportedFormatsArray)(CFAllocatorRef, CFMutableArrayRef *, H4ISPCaptureStreamRef, H4ISPCaptureDeviceRef);
+int (*orig_CopySupportedFormatsArray)(CFAllocatorRef, CFMutableArrayRef *, H4ISPCaptureStreamRef, H4ISPCaptureDeviceRef);
+int hax_CopySupportedFormatsArray(CFAllocatorRef ref, CFMutableArrayRef *arg2, H4ISPCaptureStreamRef arg3, H4ISPCaptureDeviceRef arg4)
 {
 	CFMutableArrayRef refo;
 	int r = orig_CopySupportedFormatsArray(ref, &refo, arg3, arg4);
 	NSMutableArray *array = (NSMutableArray *)refo;
 	for (NSUInteger i = 0; i < array.count;  i++) {
 		NSMutableDictionary *format = [array[i] mutableCopy];
-		NSInteger videoMaxWidth = [format[@"VideoMaxWidth"] intValue];
-		NSInteger videoMaxHeight = [format[@"VideoMaxHeight"] intValue];
-		NSInteger videoMaxFPS = [format[@"VideoMaxFrameRate"] intValue];
-		if (videoMaxWidth == 1408 && videoMaxHeight == 792 && videoMaxFPS == 60)
-			format[@"Experimental"] = @0;
+		//NSInteger videoMaxWidth = [format[@"VideoMaxWidth"] intValue];
+		//NSInteger videoMaxHeight = [format[@"VideoMaxHeight"] intValue];
+		//NSInteger videoMaxFPS = [format[@"VideoMaxFrameRate"] intValue];
+		//if (/*videoMaxWidth == 1408 && videoMaxHeight == 792 && */videoMaxFPS == 60)
+			[format removeObjectForKey:@"Experimental"];
 		array[i] = format;
 	}
+	//NSLog(@"%@", array);
 	*arg2 = (CFMutableArrayRef)array;
 	return r;
 }
 
-static NSMutableDictionary *format60fps(NSInteger nwidth, NSInteger nheight, NSInteger nmaxWidth, NSInteger nmaxHeight, float fov, NSInteger nminIntegrationTime, NSInteger nmaxIntegrationTime, float videoScaleFactor, NSUInteger index)
+/*static NSMutableDictionary *format60fps(NSInteger nwidth, NSInteger nheight, NSInteger nmaxWidth, NSInteger nmaxHeight, float fov, NSInteger nminIntegrationTime, NSInteger nmaxIntegrationTime, float videoScaleFactor, NSUInteger index)
 {
 	NSMutableDictionary *format = [NSMutableDictionary dictionary];
 	NSNumber *width = @(nwidth);
@@ -74,7 +96,7 @@ CFPropertyListRef new__FigVideoCaptureCopyCameraStreamInfo()
 {
 	CFPropertyListRef sensorProperties = orig__FigVideoCaptureCopyCameraStreamInfo();
 	return (CFPropertyListRef)arrayByAdding60FPS([(NSArray *)sensorProperties mutableCopy]);
-}
+}*/
 
 #define CELESTIAL "/System/Library/PrivateFrameworks/Celestial.framework/Celestial"
 #define H4 "/System/Library/MediaCapture/H4ISP.mediacapture"
@@ -82,15 +104,17 @@ CFPropertyListRef new__FigVideoCaptureCopyCameraStreamInfo()
 %ctor
 {
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-	void *celestial = dlopen(CELESTIAL, RTLD_LAZY);
+	/*void *celestial = dlopen(CELESTIAL, RTLD_LAZY);
 	if (celestial != nil) {
 		MSHookFunction((void *)MSFindSymbol(NULL, "_FigVideoCaptureCopyCameraStreamInfo"), (void *)new__FigVideoCaptureCopyCameraStreamInfo, (void **)&orig__FigVideoCaptureCopyCameraStreamInfo);
-	}
+	}*/
 	void *h4 = dlopen(H4, RTLD_LAZY);
 	if (h4 != NULL) {
 		MSImageRef h4Ref = MSGetImageByName(H4);		
-		my_CopySupportedFormatsArray = (int (*)(CFAllocatorRef, CFMutableArrayRef *, H4ISPCaptureStream *, H4ISPCaptureDevice *))MSFindSymbol(h4Ref, "__ZL25CopySupportedFormatsArrayPK13__CFAllocatorPvP18H4ISPCaptureStreamP18H4ISPCaptureDevice");
+		my_CopySupportedFormatsArray = (int (*)(CFAllocatorRef, CFMutableArrayRef *, H4ISPCaptureStreamRef, H4ISPCaptureDeviceRef))MSFindSymbol(h4Ref, "__ZL25CopySupportedFormatsArrayPK13__CFAllocatorPvP18H4ISPCaptureStreamP18H4ISPCaptureDevice");
 		MSHookFunction((void *)my_CopySupportedFormatsArray, (void *)hax_CopySupportedFormatsArray, (void **)&orig_CopySupportedFormatsArray);
+		//my_H4ISPCaptureDeviceCopyProperty = (int (*)(OpaqueCMBaseObjectRef, CFStringRef const, CFAllocatorRef, CFMutableArrayRef *))MSFindSymbol(h4Ref, "__ZL30H4ISPCaptureDeviceCopyPropertyP18OpaqueCMBaseObjectPK10__CFStringPK13__CFAllocatorPv");
+		//MSHookFunction((void *)my_H4ISPCaptureDeviceCopyProperty, (void *)hax_H4ISPCaptureDeviceCopyProperty, (void **)&orig_H4ISPCaptureDeviceCopyProperty);
 	}
 	[pool drain];
 }
