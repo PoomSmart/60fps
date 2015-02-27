@@ -7,5 +7,6 @@ include theos/makefiles/common.mk
 
 TWEAK_NAME = 60fps7
 60fps7_FILES = Tweak.xm
+60fps7_FRAMEWORKS = CoreMedia
 
 include $(THEOS_MAKE_PATH)/tweak.mk

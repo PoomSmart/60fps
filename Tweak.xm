@@ -35,10 +35,9 @@ int hax_CopySupportedFormatsArray(CFAllocatorRef ref, CFMutableArrayRef *arg2, H
 	NSMutableArray *array = (NSMutableArray *)refo;
 	for (NSUInteger i = 0; i < array.count;  i++) {
 		NSMutableDictionary *format = [array[i] mutableCopy];
-		NSInteger videoWidth = [format[@"VideoWidth"] intValue];
-		NSInteger videoMaxHeight = [format[@"VideoHeight"] intValue];
 		NSInteger videoMaxFPS = [format[@"VideoMaxFrameRate"] intValue];
-		if (videoWidth == 1280 && videoMaxHeight == 720 && videoMaxFPS == 60)
+		CMVideoFormatDescriptionRef ref = (CMVideoFormatDescriptionRef)format[@"FormatDescription"];
+		if (CMVideoFormatDescriptionGetDimensions(ref).width == 1280 && CMVideoFormatDescriptionGetDimensions(ref).height == 720 && videoMaxFPS == 60)
 			[format removeObjectForKey:@"Experimental"];
 		array[i] = format;
 	}
