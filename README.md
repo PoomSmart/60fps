@@ -1,9 +1,9 @@
-60fps7 [Beta]
+60fps
 =========
 
-60 fps capture support for camera. (Currently for iOS 7 only)
+60 fps capture support for legacy camera.
 
-Installable devices
+Target devices
 =========
 
 - iPhone 4s

@@ -5,5 +5,3 @@ rm -f /var/mobile/Library/Preferences/com.apple.celestial.plist
 
 echo "Killing mediaserverd..."
 killall mediaserverd
-
-echo "Created by PoomSmart"

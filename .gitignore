@@ -1,7 +1,3 @@
-theos
-.DS_Store
-obj
-_
 .theos
-
-*.dylib
+obj
+packages/*

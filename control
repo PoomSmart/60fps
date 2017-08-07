@@ -1,0 +1,9 @@
+Package: com.ps.sixtyfps
+Name: 60fps
+Depends: mobilesubstrate, firmware (>= 7.0), gsc.still-camera
+Version: 0.0.1
+Architecture: iphoneos-arm
+Description: 60 fps capture support for legacy camera.
+Author: PoomSmart
+Section: Tweaks
+Depiction: httpd://poomdmart.github.io/repo/60fps/index.html
