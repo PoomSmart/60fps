@@ -1,1 +1,6 @@
-{ Filter = { Bundles = ( "com.apple.camera"); Executables = ( "mediaserverd" ); }; }
+{
+  Filter = {
+    Bundles = ( "com.apple.camera", "com.apple.Preferences", "com.apple.springboard" );
+    Executables = ( "mediaserverd" );
+  };
+}

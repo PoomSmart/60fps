@@ -1,4 +1,7 @@
-#import <Foundation/Foundation.h>
+#import <CoreMedia/CoreMedia.h>
+#import "../PS.h"
+
+%group mediaserverd
 
 typedef struct H4ISPCaptureStream *H4ISPCaptureStreamRef;
 typedef struct H4ISPCaptureDevice *H4ISPCaptureDeviceRef;
@@ -8,7 +11,7 @@ int (*CopySupportedFormatsArray)(CFAllocatorRef, CFMutableArrayRef *, H4ISPCaptu
 %hookf(int, CopySupportedFormatsArray, CFAllocatorRef ref, CFMutableArrayRef *formats, H4ISPCaptureStreamRef arg3, H4ISPCaptureDeviceRef arg4) {
     CFMutableArrayRef refo;
     int r = %orig(ref, &refo, arg3, arg4);
-    NSMutableArray *array = (NSMutableArray *)refo;
+    NSMutableArray <NSMutableDictionary *> *array = (NSMutableArray *)refo;
     for (NSUInteger i = 0; i < array.count; i++) {
         NSMutableDictionary *format = [[array[i] mutableCopy] autorelease];
         NSInteger videoMaxFPS = [format[@"VideoMaxFrameRate"] integerValue];
@@ -28,9 +31,28 @@ int (*CopySupportedFormatsArray)(CFAllocatorRef, CFMutableArrayRef *, H4ISPCaptu
     return r;
 }
 
+%end
+
+%group MG
+
+extern "C" Boolean MGGetBoolAnswer(CFStringRef);
+%hookf(Boolean, MGGetBoolAnswer, CFStringRef key) {
+    return k("RearFacingCamera60fpsVideoCaptureCapability") ? YES : %orig;
+}
+
+%end
 
 %ctor {
-    MSImageRef h4Ref = MSGetImageByName("/System/Library/MediaCapture/H4ISP.mediacapture");
-    CopySupportedFormatsArray = (int (*)(CFAllocatorRef, CFMutableArrayRef *, H4ISPCaptureStreamRef, H4ISPCaptureDeviceRef))MSFindSymbol(h4Ref, "__ZL25CopySupportedFormatsArrayPK13__CFAllocatorPvP18H4ISPCaptureStreamP18H4ISPCaptureDevice");
-    %init;
+    NSArray <NSString *> *args = [NSClassFromString(@"NSProcessInfo") processInfo].arguments;
+    if (args.count) {
+        NSString *processName = [args[0] lastPathComponent];
+        if ([processName isEqualToString:@"mediaserverd"]) {
+            dlopen("/System/Library/MediaCapture/H4ISP.mediacapture", RTLD_LAZY);
+            MSImageRef h4Ref = MSGetImageByName("/System/Library/MediaCapture/H4ISP.mediacapture");
+            CopySupportedFormatsArray = (int (*)(CFAllocatorRef, CFMutableArrayRef *, H4ISPCaptureStreamRef, H4ISPCaptureDeviceRef))MSFindSymbol(h4Ref, "__ZL25CopySupportedFormatsArrayPK13__CFAllocatorPvP18H4ISPCaptureStreamP18H4ISPCaptureDevice");
+            %init(mediaserverd);
+        } else {
+            %init(MG);
+        }
+    }
 }
