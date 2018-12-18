@@ -45,13 +45,10 @@ int (*CopySupportedFormatsArray)(CFAllocatorRef, CFMutableArrayRef *, HXISPCaptu
                     int videoMaxFPS = 0, videoMaxWidth = 0, videoMaxHeight = 0;
                     numberRef = (CFNumberRef)CFDictionaryGetValue(iformat, CFSTR("VideoMaxFrameRate"));
                     CFNumberGetValue(numberRef, kCFNumberIntType, &videoMaxFPS);
-                    if (numberRef) CFRelease(numberRef);
                     numberRef = (CFNumberRef)CFDictionaryGetValue(iformat, CFSTR("VideoMaxWidth"));
                     CFNumberGetValue(numberRef, kCFNumberIntType, &videoMaxWidth);
-                    if (numberRef) CFRelease(numberRef);
                     numberRef = (CFNumberRef)CFDictionaryGetValue(iformat, CFSTR("VideoMaxHeight"));
                     CFNumberGetValue(numberRef, kCFNumberIntType, &videoMaxHeight);
-                    if (numberRef) CFRelease(numberRef);
                     if (videoMaxFPS == 60 && videoMaxWidth == 2816 && videoMaxHeight == 792)
                         modify = YES;
                 }
@@ -76,19 +73,14 @@ int (*CopySupportedFormatsArray)(CFAllocatorRef, CFMutableArrayRef *, HXISPCaptu
                 int Width = 3840, Height = 2160, SensorWidth = 4096, SensorHeight = 2304, VideoDefaultMaxFrameRate = 30;
                 numberRef = CFNumberCreate(kCFAllocatorDefault, kCFNumberIntType, &Width);
                 CFDictionarySetValue(format, CFSTR("Width"), numberRef);
-                CFRelease(numberRef);
                 numberRef = CFNumberCreate(kCFAllocatorDefault, kCFNumberIntType, &Height);
                 CFDictionarySetValue(format, CFSTR("Height"), numberRef);
-                CFRelease(numberRef);
                 numberRef = CFNumberCreate(kCFAllocatorDefault, kCFNumberIntType, &SensorWidth);
                 CFDictionarySetValue(format, CFSTR("SensorWidth"), numberRef);
-                CFRelease(numberRef);
                 numberRef = CFNumberCreate(kCFAllocatorDefault, kCFNumberIntType, &SensorHeight);
                 CFDictionarySetValue(format, CFSTR("SensorHeight"), numberRef);
-                CFRelease(numberRef);
                 numberRef = CFNumberCreate(kCFAllocatorDefault, kCFNumberIntType, &VideoDefaultMaxFrameRate);
                 CFDictionarySetValue(format, CFSTR("VideoDefaultMaxFrameRate"), numberRef);
-                CFRelease(numberRef);
                 CMVideoFormatDescriptionRef info = NULL;
                 CFDictionaryRef extensions = CMFormatDescriptionGetExtensions((CMFormatDescriptionRef)ref);
                 CMVideoFormatDescriptionCreate(kCFAllocatorDefault, '420v', 3840, 2160, extensions, &info);
