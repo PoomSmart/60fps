@@ -3,6 +3,8 @@
 #import <CoreMedia/CoreMedia.h>
 #import "Header.h"
 
+%config(generator=MobileSubstrate)
+
 %group mediaserverd
 
 typedef struct HXISPCaptureStream *HXISPCaptureStreamRef;
@@ -56,6 +58,12 @@ int (*CopySupportedFormatsArray)(CFAllocatorRef, CFMutableArrayRef *, HXISPCaptu
 extern "C" Boolean MGGetBoolAnswer(CFStringRef);
 %hookf(Boolean, MGGetBoolAnswer, CFStringRef key) {
     return CFStringEqual(key, CFSTR("RearFacingCamera60fpsVideoCaptureCapability")) ? YES : %orig;
+}
+
+extern "C" SInt32 MGGetSInt32Answer(CFStringRef, SInt32);
+%hookf(SInt32, MGGetSInt32Answer, CFStringRef key, SInt32 defautValue) {
+    // back 720p60
+    return CFStringEqual(key, CFSTR("0/7QNywWU4IqDcyvTv9UYQ")) ? 60 : %orig;
 }
 
 %end

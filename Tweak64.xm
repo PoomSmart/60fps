@@ -4,6 +4,8 @@
 #import <sys/utsname.h>
 #import "Header.h"
 
+%config(generator=MobileSubstrate)
+
 %group mediaserverd
 
 int MajorVer = 0;
@@ -177,7 +179,7 @@ extern "C" SInt32 MGGetSInt32Answer(CFStringRef, SInt32);
 %ctor {
     struct utsname systemInfo;
     uname(&systemInfo);
-    if (strcmp("iPhone8,3", systemInfo.machine) == 0 || strcmp("iPhone8,4", systemInfo.machine) == 0)
+    if (strncmp("iPhone8,3", systemInfo.machine, 9) == 0 || strncmp("iPhone8,4", systemInfo.machine, 9) == 0)
         MajorVer = 8;
     else if (strncmp("iPhone6", systemInfo.machine, 7) == 0)
         MajorVer = 6;
