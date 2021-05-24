@@ -5,5 +5,7 @@ Version: 0.0.1
 Architecture: iphoneos-arm
 Description: 60 fps capture support for legacy camera.
 Author: PoomSmart
+Maintainer: PoomSmart
 Section: Tweaks
 Depiction: https://poomsmart.github.io/repo/depictions/60fps.html
+SileoDepiction: https://poomsmart.github.io/repo/sileodepictions/60fps.json

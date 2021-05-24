@@ -1,4 +1,4 @@
 .theos
-packages/*
+packages
 formats*.txt
 .DS_Store

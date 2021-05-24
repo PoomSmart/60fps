@@ -1,7 +1,8 @@
 #if !__LP64__
 
-#import <CoreMedia/CoreMedia.h>
 #import "Header.h"
+#import <CoreMedia/CoreMedia.h>
+#import <dlfcn.h>
 
 %config(generator=MobileSubstrate)
 
@@ -18,8 +19,7 @@ int (*CopySupportedFormatsArray)(CFAllocatorRef, CFMutableArrayRef *, HXISPCaptu
     for (CFIndex i = 0; i < CFArrayGetCount(refo); ++i) {
         CFDictionaryRef iformat = (CFDictionaryRef)CFArrayGetValueAtIndex(refo, i);
         if (!CFDictionaryContainsKey(iformat, CFSTR("Experimental"))) continue;
-        HBLogDebug(@"Experimental format %ld", i);
-#ifdef DEBUG
+#ifdef __DEBUG__
         logCFDictionary(0, iformat);
 #endif
         BOOL modify = NO;
@@ -37,13 +37,11 @@ int (*CopySupportedFormatsArray)(CFAllocatorRef, CFMutableArrayRef *, HXISPCaptu
         }
         if (modify) {
             CFMutableDictionaryRef format = CFDictionaryCreateMutableCopy(kCFAllocatorDefault, CFDictionaryGetCount(iformat), iformat);
-            HBLogDebug(@"Modify format %ld", i);
             CFDictionaryRemoveValue(format, CFSTR("Experimental"));
             CFStringRef values[1] = { CFSTR("AVCaptureSessionPresetHigh60") };
             CFArrayRef preset = CFArrayCreate(kCFAllocatorDefault, (const void **)values, 1, &kCFTypeArrayCallBacks);
             CFDictionaryAddValue(format, CFSTR("AVCaptureSessionPresets"), preset);
             CFRelease(preset);
-            HBLogDebug(@"Format %ld modified", i);
             CFArraySetValueAtIndex(refo, i, format);
         }
     }
@@ -55,8 +53,8 @@ int (*CopySupportedFormatsArray)(CFAllocatorRef, CFMutableArrayRef *, HXISPCaptu
 
 %group MG
 
-extern "C" Boolean MGGetBoolAnswer(CFStringRef);
-%hookf(Boolean, MGGetBoolAnswer, CFStringRef key) {
+extern "C" bool MGGetBoolAnswer(CFStringRef);
+%hookf(bool, MGGetBoolAnswer, CFStringRef key) {
     return CFStringEqual(key, CFSTR("RearFacingCamera60fpsVideoCaptureCapability")) ? YES : %orig;
 }
 
@@ -69,9 +67,11 @@ extern "C" SInt32 MGGetSInt32Answer(CFStringRef, SInt32);
 %end
 
 %ctor {
-    NSString *processName = [NSProcessInfo processInfo].processName;
+    char *executablePathC = **_NSGetArgv();
+	NSString *executablePath = [NSString stringWithUTF8String:executablePathC];
+    NSString *processName = [executablePath lastPathComponent];
     if ([@"mediaserverd" isEqualToString:processName]) {
-        dlopen("/System/Library/MediaCapture/H4ISP.mediacapture", RTLD_LAZY);
+        dlopen("/System/Library/MediaCapture/H4ISP.mediacapture", RTLD_NOW);
         MSImageRef h4Ref = MSGetImageByName("/System/Library/MediaCapture/H4ISP.mediacapture");
         CopySupportedFormatsArray = (int (*)(CFAllocatorRef, CFMutableArrayRef *, HXISPCaptureStreamRef, HXISPCaptureDeviceRef))MSFindSymbol(h4Ref, "__ZL25CopySupportedFormatsArrayPK13__CFAllocatorPvP18H4ISPCaptureStreamP18H4ISPCaptureDevice");
         %init(mediaserverd);

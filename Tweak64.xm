@@ -1,8 +1,9 @@
 #if __LP64__
 
+#import "Header.h"
 #import <CoreMedia/CoreMedia.h>
 #import <sys/utsname.h>
-#import "Header.h"
+#import <dlfcn.h>
 
 %config(generator=MobileSubstrate)
 
@@ -25,7 +26,6 @@ int (*CopySupportedFormatsArray64)(CFAllocatorRef, CFMutableArrayRef *, HXISPCap
         BOOL experimental = CFDictionaryContainsKey(iformat, CFSTR("Experimental"));
         if ((MajorVer == 6 || found_fourk_se) && !experimental) continue;
         BOOL modify = NO, sixty = NO, fourk = NO, fourk_hack = NO;
-        HBLogDebug(@"Format %ld", i);
         int Width = 0, Height = 0, SensorWidth = 0, SensorHeight = 0, VideoDefaultMaxFrameRate = 0;
         if (MajorVer == 8) {
             // 4k30 -> 4k60
@@ -53,7 +53,6 @@ int (*CopySupportedFormatsArray64)(CFAllocatorRef, CFMutableArrayRef *, HXISPCap
         if (modify) {
             CFNumberRef ref;
             CFMutableDictionaryRef format = CFDictionaryCreateMutableCopy(kCFAllocatorDefault, CFDictionaryGetCount(iformat), iformat);
-            HBLogDebug(@"Modify format %ld", i);
             CFDictionaryRemoveValue(format, CFSTR("Experimental"));
             if (sixty) {
                 CFStringRef values[1] = { CFSTR("AVCaptureSessionPresetHigh60") };
@@ -98,8 +97,7 @@ int (*CopySupportedFormatsArray64)(CFAllocatorRef, CFMutableArrayRef *, HXISPCap
                 CMVideoFormatDescriptionCreate(kCFAllocatorDefault, '420v', 3840, 2160, extensions, &info);
                 CFDictionarySetValue(format, CFSTR("FormatDescription"), info);
             }
-            HBLogDebug(@"Format %ld modified", i);
-#if DEBUG
+#ifdef __DEBUG__
             logCFDictionary(0, format);
 #endif
             if (fourk_60_se == NULL)
@@ -116,8 +114,8 @@ int (*CopySupportedFormatsArray64)(CFAllocatorRef, CFMutableArrayRef *, HXISPCap
 
 %group MG
 
-extern "C" Boolean MGGetBoolAnswer(CFStringRef);
-%hookf(Boolean, MGGetBoolAnswer, CFStringRef key) {
+extern "C" bool MGGetBoolAnswer(CFStringRef);
+%hookf(bool, MGGetBoolAnswer, CFStringRef key) {
     if (CFStringEqual(key, CFSTR("RearFacingCamera60fpsVideoCaptureCapability")))
         return YES;
     if (MajorVer == 8 && CFStringEqual(key, CFSTR("g/MkWm2Ac6+TLNBgtBGxsg"))) // HEVC
@@ -183,9 +181,11 @@ extern "C" SInt32 MGGetSInt32Answer(CFStringRef, SInt32);
         MajorVer = 8;
     else if (strncmp("iPhone6", systemInfo.machine, 7) == 0)
         MajorVer = 6;
-    NSString *processName = [NSProcessInfo processInfo].processName;
+    char *executablePathC = **_NSGetArgv();
+	NSString *executablePath = [NSString stringWithUTF8String:executablePathC];
+    NSString *processName = [executablePath lastPathComponent];
     if ([@"mediaserverd" isEqualToString:processName]) {
-        if (dlopen("/System/Library/MediaCapture/H6ISP.mediacapture", RTLD_LAZY) != NULL) {
+        if (dlopen("/System/Library/MediaCapture/H6ISP.mediacapture", RTLD_NOW) != NULL) {
             MSImageRef h6Ref = MSGetImageByName("/System/Library/MediaCapture/H6ISP.mediacapture");
             CopySupportedFormatsArray64 = (int (*)(CFAllocatorRef, CFMutableArrayRef *, HXISPCaptureStreamRef, HXISPCaptureDeviceRef))MSFindSymbol(h6Ref, "__ZL25CopySupportedFormatsArrayPK13__CFAllocatorPvP18H6ISPCaptureStreamP18H6ISPCaptureDevice");
         }
