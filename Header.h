@@ -1,20 +1,25 @@
 #ifndef _60FPS_H_
 #define _60FPS_H_
 
-#import "../PSHeader/Misc.h"
-#import <CoreFoundation/CoreFoundation.h>
+#import <PSHeader/Misc.h>
 
-FOUNDATION_EXPORT char ***_NSGetArgv();
+FOUNDATION_EXPORT char ***_NSGetArgv(void);
 
 void logCFDictionary(int level, CFDictionaryRef dict);
 
-#define getNumberValue(variable) \
-    if (CFDictionaryContainsKey(iformat, CFSTR(# variable))) \
-        CFNumberGetValue((CFNumberRef)CFDictionaryGetValue(iformat, CFSTR(# variable)), kCFNumberIntType, &variable);
+@interface AVCaptureFigVideoDevice : NSObject
+- (long long)maxH264VideoDimensions;
+- (int)minMacroblocksForHighProfileUpTo30fps;
+- (int)minMacroblocksForHighProfileAbove30fps;
+- (BOOL)usesQuantizationScalingMatrix_H264_Steep_16_48;
+@end
 
-#define setNumberValue(variable) \
-    CFNumberRef ref ## variable = CFNumberCreate(kCFAllocatorDefault, kCFNumberIntType, &variable); \
-    CFDictionarySetValue(format, CFSTR(# variable), ref ## variable); \
-    if (CFGetTypeID(ref ## variable) == CFNumberGetTypeID()) CFRelease(ref ## variable);
+@interface FigCaptureSourceVideoFormat : NSObject
+- (BOOL)isHighProfileH264Supported;
+@end
+
+#define getNumberValue(variable) \
+    if (CFDictionaryContainsKey(iformat, CFSTR(#variable))) \
+        CFNumberGetValue((CFNumberRef)CFDictionaryGetValue(iformat, CFSTR(#variable)), kCFNumberIntType, &variable);
 
 #endif
