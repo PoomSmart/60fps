@@ -5,8 +5,6 @@ Enable rear 60 fps video on cameras that already have the mode in firmware but h
 - 720p60 on iPhone 4s (`iPhone4,1`), H4ISP, through iOS 9.3.6
 - 1080p60 on iPhone 5s (`iPhone6,1` / `iPhone6,2`), H6ISP, through iOS 12.5.8
 
-iPhone SE (1st generation) is not a target. Stock already has 1080p60 and 4K30.
-
 ## Not possible
 
 - **4K30 on iPhone 5s:** the rear sensor has no 3840x2160 mode. Largest 16:9 readout is 2112x1188; largest overall is 3264x2448. See [sensors.md](sensors.md).
